@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "qa-bug-hunter",
+  "displayName": "QA Bug Hunter",
+  "version": "1.7.0",
+  "description": "Finds, reproduces, and confirms bugs in frontend or backend code and reports them with evidence — read-only on your codebase (it never fixes). Confirms via the project's own unit tests; an optional Playwright MCP, enabled on demand, handles UI verification.",
+  "author": {
+    "name": "Martin Harutyunyan",
+    "url": "https://github.com/MartinHar"
+  },
+  "homepage": "https://github.com/MartinHar/qa-bug-hunter",
+  "repository": "https://github.com/MartinHar/qa-bug-hunter",
+  "keywords": ["qa", "testing", "bug-hunting", "playwright", "code-review", "quality-assurance", "security"],
+  "license": "MIT"
+}

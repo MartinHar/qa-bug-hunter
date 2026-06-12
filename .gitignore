@@ -1,0 +1,15 @@
+# QA Bug Hunter run folder — all run artifacts (reports, repros, evidence, sessions) live here
+# and it also self-ignores via its own qa-bug-hunt/.gitignore
+qa-bug-hunt/
+
+# Node
+node_modules/
+
+# macOS
+.DS_Store
+
+# JetBrains IDEs
+.idea/
+
+# Internal design docs/plans — kept local, not published
+docs/

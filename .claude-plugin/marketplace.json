@@ -1,0 +1,26 @@
+{
+  "name": "qa-bug-hunter",
+  "owner": {
+    "name": "Martin Harutyunyan",
+    "url": "https://github.com/MartinHar"
+  },
+  "metadata": {
+    "description": "Marketplace for the QA Bug Hunter plugin.",
+    "version": "1.7.0"
+  },
+  "plugins": [
+    {
+      "name": "qa-bug-hunter",
+      "source": "./",
+      "description": "Finds, reproduces, and confirms bugs in frontend or backend code and reports them with evidence — read-only on your codebase (it never fixes). Confirms via the project's own unit tests; an optional Playwright MCP, enabled on demand, handles UI verification.",
+      "version": "1.7.0",
+      "author": {
+        "name": "Martin Harutyunyan",
+        "url": "https://github.com/MartinHar"
+      },
+      "keywords": ["qa", "testing", "bug-hunting", "playwright", "code-review", "quality-assurance", "security"],
+      "category": "workflow",
+      "license": "MIT"
+    }
+  ]
+}
