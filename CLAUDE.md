@@ -17,9 +17,15 @@ entirely in prose, so wording is load-bearing.
 - **Try the plugin in one session:** `claude --plugin-dir /path/to/qa-bug-hunter`.
 - **Apply changes mid-session:** edits to `skills/qa-bug-hunter/SKILL.md` take effect immediately;
   changes to other components (hooks, references, manifests) need `/reload-plugins`.
-- **Run an eval (manual):** `cd evals/<scenario>/fixture`, start Claude Code there with the plugin
-  active, paste the prompt from that scenario's `SCENARIO.md`, and check the run against its rubric.
-  Fixtures are plain Python, runnable with `pytest`/`python`.
+- **Structural checks (free, no tokens):** `bash evals/check-structure.sh` — version parity, reference
+  links resolve, eval scenarios wired. A local `.git/hooks/pre-push` hook runs this on every `git push`
+  and aborts on failure (bypass with `git push --no-verify`). Local only — there is no CI.
+- **Behavioral evals (spends tokens):** `evals/run.sh` (add `--only NN`, `--model …`, `--keep`). Runs
+  each scenario as a headless hunt against a throwaway fixture copy and asserts its `check.sh` /
+  `scenario.sh`, including a hash-based read-only check. Cheap model (Sonnet) by default. You run these
+  yourself before a release; the pre-push hook reminds you but never runs them. Never runs in a user hunt.
+- **Run a single eval by hand:** `cd evals/<scenario>/fixture`, start Claude Code with the plugin
+  active, paste the prompt from `SCENARIO.md`, and check against its rubric. Fixtures are plain Python.
 
 The repo is published on GitHub (`origin`, default branch `master`) at
 https://github.com/MartinHar/qa-bug-hunter and is itself a Claude Code marketplace, so **pushing to

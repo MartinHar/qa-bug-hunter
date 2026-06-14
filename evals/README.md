@@ -8,18 +8,59 @@
 > effect on how the skill runs.
 
 Small, self-contained scenarios to check the skill still behaves after you edit it. Each folder has a
-`SCENARIO.md` (the prompt to give + a pass/fail rubric) and a tiny `fixture/` to run against.
+`SCENARIO.md` (the prompt to give + a human-readable pass/fail rubric) and a tiny `fixture/` to run
+against.
 
-## How to run (manual)
+> **These never run during a user's bug hunt.** The skill does not reference `evals/`; the runtime
+> never loads it. Running an eval spends *your* tokens, only when you (or CI) choose to. Deleting
+> `evals/` changes nothing about how the plugin behaves for users.
 
-1. `cd evals/<scenario>/fixture`
-2. Start Claude Code there with the plugin active.
-3. Paste the prompt from the scenario's `SCENARIO.md`.
-4. Check the run against the rubric. It passes only if every "must" holds.
+## Two ways to check the plugin
 
-These are deliberately framework-light (plain Python fixtures, runnable with `pytest`/`python`) so they
-test the skill's *behavior*, not a toolchain. If you use a structured eval harness (e.g. the
-skill-creator / superpowers eval runners), the rubrics map directly to expected-behavior assertions.
+### 1. Structural checks — free, no tokens, run anytime
+
+```bash
+bash evals/check-structure.sh
+```
+
+Verifies the things that would ship a broken release: `plugin.json`/`marketplace.json` version parity,
+every `references/*.md` that `SKILL.md` links actually exists (and no orphan references), and every
+eval scenario is fully wired. No model calls — safe to run on every change. A local git **pre-push
+hook** (`.git/hooks/pre-push`) runs this automatically every time you `git push`, and aborts the push
+if it fails (bypass with `git push --no-verify`). The hook is local to your machine only — not
+committed, no CI involved.
+
+### 2. Behavioral evals — runs the plugin, spends tokens
+
+```bash
+evals/run.sh                       # all scenarios, default cheap model (Sonnet)
+evals/run.sh --only 02             # just scenario 02
+evals/run.sh --model claude-opus-4-8   # pick a model
+evals/run.sh --keep                # keep each scenario's temp workdir to inspect
+```
+
+The runner copies each scenario's `fixture/` to a throwaway temp dir, runs one headless hunt with the
+plugin loaded (`claude --print --plugin-dir …`), then runs that scenario's mechanical checks
+(`check.sh`, or a custom `scenario.sh`). Because it runs against a disposable copy with permissions
+bypassed, it can prove the **read-only invariant** directly: it hashes the source tree before the run
+and asserts nothing outside `qa-bug-hunt/` changed.
+
+Run it yourself before a release (pushing to master ships the plugin), or after any change to the
+methodology. The pre-push hook **reminds** you to run it when you push to master but never runs it for
+you — these spend tokens, so you stay in control of when. Cheap by default: the fixtures are tiny, so
+Sonnet/Haiku exercises the behavior fine; use Opus only to test Opus behavior. There is no CI — nothing
+runs the plugin except you, locally.
+
+### Scenario contract
+
+Each `evals/NN-name/` is one of:
+- **standard** — `prompt.txt` (the prompt) + `check.sh` (assertions). The runner does the hunt for you.
+- **custom** — `scenario.sh` drives its own run (e.g. scenario 04 does two hunts to test cross-run
+  memory). `check.sh` / `scenario.sh` source `evals/lib.sh` for assertion helpers and `eval_finish`.
+
+`SCENARIO.md` stays the human-readable rubric; `check.sh` is the machine-checkable subset of it. They
+are deliberately framework-light (plain Python fixtures) so they test the skill's *behavior*, not a
+toolchain.
 
 ## What each scenario guards
 
@@ -30,5 +71,10 @@ skill-creator / superpowers eval runners), the rubrics map directly to expected-
   important guard: a noisy bug-hunter is worse than none.
 - **03-never-fix** — asked explicitly to fix, it finds and reports the bug but **does not modify the
   source**, and says fixing is out of scope.
+- **04-resource-memory** — a custom two-hunt scenario: the first hunt is given a shared-models path; it
+  must record that in the resource registry and **reuse it on a second, different target without
+  re-asking**, and when the path is removed it must flag it stale and re-ask rather than fail silently.
 
-Add your own scenarios for your domain (money/rounding, idempotency, authz) the same way.
+Add your own scenarios for your domain (money/rounding, idempotency, authz) the same way: drop in a
+`fixture/`, a `SCENARIO.md` rubric, and either `prompt.txt` + `check.sh` (standard) or a `scenario.sh`
+(custom). The structural check and the runner pick it up automatically.
