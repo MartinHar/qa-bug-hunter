@@ -7,7 +7,7 @@ assert_glob "failing repro written to repros/"   "$WORKDIR/qa-bug-hunt/repros/*"
 
 report="$(report_file)"
 if [ -n "$report" ]; then
-  assert_grep "same bug reported Confirmed"       'status:[[:space:]]*confirmed' "$report"
+  assert_grep "same bug reported Confirmed"       'status[^A-Za-z0-9]{0,12}confirmed' "$report"
 else
   bad "no bug-report file to inspect"
 fi

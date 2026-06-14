@@ -6,7 +6,7 @@ assert_glob  "failing repro written to repros/"      "$WORKDIR/qa-bug-hunt/repro
 
 report="$(report_file)"
 if [ -n "$report" ]; then
-  assert_grep "finding labelled Confirmed"           'status:[[:space:]]*confirmed' "$report"
+  assert_grep "finding labelled Confirmed"           'status[^A-Za-z0-9]{0,12}confirmed' "$report"
   assert_grep "report points at accumulate.py"       'accumulate\.py'               "$report"
 else
   bad "no bug-report file to inspect"

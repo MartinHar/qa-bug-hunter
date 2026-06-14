@@ -13,8 +13,10 @@ naming, assertions, and fixtures.
 ## 2. Write the smallest failing test
 
 Write the minimal test that fails if and only if the bug exists, in the project framework's idioms. It
-must **fail while the bug is present** so it doubles as a regression test once the code is fixed. Show
-it to the user before running it, and capture its output verbatim — that output is the evidence.
+must **fail while the bug is present** so it doubles as a regression test once **the team** fixes the
+code. **Deliver it failing (red); never edit the source to make it green** — turning the repro green by
+changing code outside `qa-bug-hunt/` is a read-only violation, not a result. Show it to the user before
+running it, and capture its output verbatim — that output is the evidence.
 
 ## 3. Where the repro lives — decide by one property
 

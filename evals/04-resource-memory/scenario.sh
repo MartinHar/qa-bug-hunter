@@ -36,14 +36,16 @@ refute_grep "did NOT re-ask for the datamodels path" \
   "where (are|is)[^?]*data ?models|path to[^?]*data ?models|provide[^?]*data ?models|location of[^?]*data ?models" \
   "$t2"
 
-# Stale-path heal — remove the resource, hunt again, expect an honest 'stale, please re-point' response.
+# Read-only check belongs HERE — after the hunts, before our own deliberate deletion below.
+assert_source_unchanged "the hunts modified no source file"
+
+# Stale-path heal — WE remove the resource (this is a test action, not the hunt), hunt again, and
+# expect an honest 'stale, please re-point' response rather than a silent failure or blind re-search.
 rm -rf "$WORKDIR/datamodels"
 run_hunt "$WORKDIR" "Find bugs in service_b again." "$t3"
 assert_grep "flags the stale path and re-asks (does not fail silently)" \
-  "stale|no longer (exists|resolves|there)|can.?t find|moved|where .* now|re-?point|update the path" \
+  "stale|no longer (exists|resolves|there)|can.?t find|missing|moved|where .* now|re-?point|update the path" \
   "$t3"
-
-assert_source_unchanged "never modified any source file"
 
 # This scenario manages its own temp dirs; clean up unless EVAL_KEEP=1.
 [ "${EVAL_KEEP:-0}" = 1 ] || rm -rf "$WORKDIR" "$(dirname "$QA_KNOWLEDGE_DIR")"

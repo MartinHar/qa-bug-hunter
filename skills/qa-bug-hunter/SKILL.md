@@ -207,9 +207,13 @@ Then:
   shared environment** (see `references/intake-and-confirmation.md`). Briefly show what you're running.
 - Capture the exact output verbatim into the run — that output is the evidence.
 
-Write the test so it **fails while the bug is present**; once the code is fixed it flips green, so the
-repro doubles as a regression test. Keep the repro file in `qa-bug-hunt/repros/` as part of the run
-record — do not delete it.
+Write the test so it **fails while the bug is present**, and **deliver it failing (red)** — that red
+run is the evidence. It doubles as a regression test that *would* flip green once **the team** fixes the
+code, but **you never apply that fix to make it pass**. Do not edit, even momentarily and even if you
+would revert it, any file outside `qa-bug-hunt/` to turn the repro green: a repro that passes because
+*you* changed the source is not a hunt result, it is a read-only violation. The green state is
+hypothetical — describe it, never produce it. Keep the repro file in `qa-bug-hunt/repros/` as part of
+the run record — do not delete it.
 
 A finding is **Confirmed** only if the repro fails as predicted. If it unexpectedly passes, the code
 is probably correct (or the hypothesis was wrong) — say so plainly. If no unit-level repro is
@@ -280,10 +284,25 @@ These protect the user's environments and data, and they keep findings trustwort
 
 - **Never modify application code while hunting.** This is a QA pass: it finds, reproduces, and reports
   bugs — it does not fix them, even if asked (fixing is a separate task; if the user wants it, that's a
-  different request handled outside this skill). The only files it writes are repro tests and run
-  artifacts inside `qa-bug-hunt/`. This is enforced by behavior, scoped to the hunt; an *optional*,
-  off-by-default hook (`hooks/`) can hard-enforce it for dedicated hunt sessions, but it is not active
-  by default and the skill never blocks normal development.
+  different request handled outside this skill). This holds **even when the request says "fix it," even
+  to demonstrate that a fix works, and even if you intend to revert it** — never run Edit/Write/MultiEdit
+  on the **target project's own files**: its application code, its tests, its configs, anything in the
+  repo being hunted *except* `qa-bug-hunt/`. If you catch yourself about to edit a project source file,
+  stop: the report *recommends* the fix in prose, it never applies it. A report that says the fix was
+  "not applied" while the source file is actually changed is a **correctness failure — worse than missing
+  the bug**, because it lies about the working tree. Inside the repo, the only files it writes are repro
+  tests and run artifacts under `qa-bug-hunt/`. (Writing the knowledge vault / resource registry at
+  `$QA_KNOWLEDGE_DIR` — normally outside the repo — is a separate, intended write, not target code; see
+  phases 0 and 6.) This is enforced by behavior, scoped to the hunt; an *optional*, off-by-default hook
+  (`hooks/`) can hard-enforce it for dedicated hunt sessions, but it is not active by default and the
+  skill never blocks normal development.
+- **Before reporting, verify you stayed read-only.** As the last step before writing the report, confirm
+  you changed no file in the **target project** except under `qa-bug-hunt/` — on a git checkout,
+  `git status --short` of the target repo should show only `qa-bug-hunt/` paths (and those are
+  gitignored, so ideally the tree is clean). The knowledge vault lives outside the repo, so it never
+  appears here anyway. If a project source file shows as modified, you broke the invariant: revert is not
+  the remedy — say so plainly in the chat and do not ship a report whose "not applied" claim contradicts
+  the working tree.
 - **Never type passwords or create accounts, and never put secrets in tests, the repo, or chat.** The
   human authenticates, or supplies a token via an environment variable / the OS keychain — never pasted
   into chat. A token is used for the run only and is **never written to disk** (not in tests, cards, the

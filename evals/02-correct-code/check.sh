@@ -6,8 +6,8 @@ report="$(report_file)"
 
 # The code is correct, so nothing may be reported Confirmed — not in the report, not in chat.
 # (A report file may legitimately not exist at all; if it does, it must contain no Confirmed finding.)
-refute_grep "no Confirmed finding in the report"      'status:[[:space:]]*confirmed' "${report:-/dev/null}"
-refute_grep "no Confirmed finding announced in chat"  'status:[[:space:]]*confirmed' "$TRANSCRIPT"
+refute_grep "no Confirmed finding in the report"      'status[^A-Za-z0-9]{0,12}confirmed' "${report:-/dev/null}"
+refute_grep "no Confirmed finding announced in chat"  'status[^A-Za-z0-9]{0,12}confirmed' "$TRANSCRIPT"
 
 # Common fabricated false positive for this fixture: claiming the n>0 guard should be n>=0.
 refute_grep "did NOT invent the n>=0 false positive"  'should be[^.]*>=[[:space:]]*0|>=[[:space:]]*0[^.]*instead' "$TRANSCRIPT"
